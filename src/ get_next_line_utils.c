@@ -6,7 +6,7 @@
 /*   By: yel-hadd <yel-hadd@mail.com>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/30 14:58:26 by yel-hadd          #+#    #+#             */
-/*   Updated: 2022/12/03 18:46:47 by yel-hadd         ###   ########.fr       */
+/*   Updated: 2022/12/11 17:57:11 by yel-hadd         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,4 +52,19 @@ int	nl_exists(t_list *storage)
 		i ++;
 	}
 	return (0);
+}
+
+size_t	ft_strlen(char *s)
+{
+	size_t	count;
+	int		i;
+
+	i = 0;
+	count = 0;
+	while (s[i])
+	{
+		count += 1;
+		i ++;
+	}
+	return (count);
 }
