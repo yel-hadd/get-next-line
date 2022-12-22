@@ -6,155 +6,151 @@
 /*   By: yel-hadd <yel-hadd@mail.com>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 15:31:39 by yel-hadd          #+#    #+#             */
-/*   Updated: 2022/12/22 19:15:55 by yel-hadd         ###   ########.fr       */
+/*   Updated: 2022/12/22 23:08:35 by yel-hadd         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-char	*ft_substr(char *s, unsigned int start, size_t len)
+char	*ft_strjoin(char *s1, char *s2)
 {
-	char	*sub;
-	size_t	slen;
+	size_t	tlen;
+	char	*js;
+	int		i;
+	int		j;
 
-	if (!s)
-		return (NULL);
-	slen = ft_strlen(s);
-	if (len > slen - start)
-		len = slen - start;
-	if (start >= slen)
-		return (ft_strdup(""));
-	sub = malloc((len + 1) * sizeof(char));
-	if (!sub)
-		return (NULL);
-	ft_memcpy(sub, s + start, len);
-	sub[len] = '\0';
-	return (sub);
-}
-
-static char	*read_and_store(int fd, char *storage)
-{
-	char	*buf;
-	int		readed;
-
-	readed = 1;
-	while(!ft_strchr(storage, '\n') && readed > 0)
+	tlen = 0;
+	if (!s1)
+		return (ft_strdup(s2));
+	tlen = ft_strlen((char *)s1) + ft_strlen((char *)s2);
+	if (tlen)
+		tlen ++;
+	js = ft_calloc((int)tlen, sizeof(char));
+	if (!js)
 	{
-		buf = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
-		if (!buf)
-			return (NULL);
-		readed = read(fd, buf, BUFFER_SIZE);
-		if (readed < 0)
-		{
-			if (storage)
-				free(storage);
-			free(buf);
-			return (NULL);
-		}
-		buf[readed] = '\0';
-		if (readed == 0)
-		{
-			free(buf);
-			return (storage);
-		}
-		storage = ft_strjoin(storage, buf);
-		free(buf);
-	}
-	return (storage);
-}
-
-static char	*get_line(char *storage)
-{
-	size_t	i;
-	size_t	j;
-	char	*line;
-
-	if (!storage)
+		free(s1);
 		return (NULL);
+	}
 	i = 0;
 	j = 0;
-	while(storage[i] && storage[i] != '\n')
+	while (s1[j] != '\0')
+		js[i++] = s1[j++];
+	j = 0;
+	while (s2[j] != '\0')
+		js[i++] = s2[j++];
+	free(s1);
+	return (js);
+}
+
+char	*update_storage(char *storage)
+{
+	char	*new_storage;
+	long	i;
+	long	j;
+
+	j = 0;
+	i = 0;
+	while (storage[j] && storage[j] != '\n')
+		j ++;
+	new_storage = ft_calloc((ft_strlen(storage) - j), sizeof(char));
+	if (!new_storage)
+		return (NULL);
+	j ++;
+	while(storage[j])
+		new_storage[i ++] = storage[j ++];
+	return (new_storage);
+}
+
+char	*get_line(char *storage)
+{
+	char	*line;
+	long	i;
+
+	// if (!ft_strchr(storage, '\n') && ft_strlen(storage))
+	// 	return (ft_strdup(storage));
+	i = 0;
+	line = NULL;
+	if (!storage[0] || !storage)
+		return (NULL);
+	while(storage[i] != '\n' && storage[i])
 		i ++;
-	if (!i)
-		return (storage);
-	line = (char *)malloc((i + 2) * sizeof(char));
+	line = ft_calloc(sizeof(char), (i + 2));
 	if (!line)
 		return (NULL);
-	while(j <= i)
+	i = 0;
+	while(storage[i] != '\n' && storage[i])
 	{
-		line[j] = storage[j];
-		j ++;
+		line[i] = storage[i];
+		i++;
 	}
-	line[j] = '\0';
+	line[i] = storage[i];
 	return (line);
 }
 
-static char	*clean_storage(char *storage)
+char *read_and_save(char *storage, int fd)
 {
-	size_t	i;
-	size_t	len;
-	char	*new_storage;
+	char	*buf;
+	long	read_byte;
+	long	i;
 
-	if (!storage)
-		return (NULL);
-	len = ft_strlen(storage);
+	read_byte = 1;
 	i = 0;
-	while(storage[i] && storage[i] != '\n')
-		i ++;
-	++ i;
-	new_storage = ft_substr(storage, i, (ft_strlen(storage) - i));
-	free(storage);
-	if (!new_storage)
-	{
+	buf = ft_calloc(sizeof(char), (BUFFER_SIZE + 1));
+	if (!buf)
 		return (NULL);
+	while (read_byte && !ft_strchr(storage, '\n'))
+	{
+		read_byte = read(fd, buf, BUFFER_SIZE);
+		if(read_byte == -1)
+		{
+			free (buf);
+			return (NULL);
+		}
+		if (read_byte == 0)
+			break;
+		storage = ft_strjoin(storage, buf);
 	}
-	storage = new_storage;
-	return(storage);
+	free(buf);
+	return (storage);
 }
 
 char *get_next_line(int fd)
 {
-	static char	*storage;
 	char		*line;
+	static char	*storage;
+	char		*tmp;
 
-	line = NULL;
-	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, line, 0) < 0)
+	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
-	// read from fd and store
-	storage = read_and_store(fd, storage);
-	if (!storage)
-		return (NULL);
-	// extract from storage to line
-	if (ft_strchr(storage, '\n') || ft_strlen(storage))
+	storage = read_and_save(storage, fd);
+	if (!storage || !storage[0])
 	{
-		line = get_line(storage);
-		if (!line[0])
-		{
-			free(line);
-			free(storage);
-			return (NULL);
-		}
-		// clean storage
-		storage = clean_storage(storage);
-		if (!storage)
-			free(line);
+		free(storage);
+		return (NULL);
 	}
+	line = get_line(storage);
+	if (!line)
+	{
+		free(storage);
+		return (NULL);
+	}
+	tmp = update_storage(storage);
+	free(storage);
+	storage = tmp;
 	return (line);
 }
 
-//int	main(void)
-//{
-//	char	*str;
-//	int		fd;
-//	fd = open("1.txt", O_RDONLY);
-//	str = get_next_line(fd);
-//	while (str)
-//	{
-//		printf("%s", str);
-//		free(str);
-//		str = get_next_line(fd);
-//	}
-//	//printf("%s", str);
-//	free(str);
-//	close(fd);
-//}
+// int	main(void)
+// {
+// 	char	*str;
+// 	int		fd;
+// 	fd = open("1.txt", O_RDONLY);
+// 	str = get_next_line(fd);
+// 	while (str)
+// 	{
+// 		printf("%s", str);
+// 		free(str);
+// 		str = get_next_line(fd);
+// 	}
+// 	close(fd);
+// }

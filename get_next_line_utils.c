@@ -6,56 +6,53 @@
 /*   By: yel-hadd <yel-hadd@mail.com>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 15:31:31 by yel-hadd          #+#    #+#             */
-/*   Updated: 2022/12/22 19:10:51 by yel-hadd         ###   ########.fr       */
+/*   Updated: 2022/12/22 21:57:48 by yel-hadd         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-char	*ft_strjoin(char *s1, char *s2)
+void	*ft_calloc(size_t count, size_t size)
 {
-	size_t	len;
-	char	*join;
-	char	*copy;
+	void	*p;
+	size_t	tst_overflow;
 
-	if (!s1)
-		return (ft_strdup(s2));
-	copy = s1;
-	len = ft_strlen(s1) + ft_strlen(s2);
-	join = malloc((len+ 1) * sizeof(char));
-	if (!join)
-		return (0);
-	while (*s1)
-		*join ++ = *s1 ++;
-	while (*s2)
-		*join ++ = *s2 ++;
-	*join = '\0';
-	free(copy);
-	return (join - len);
+	tst_overflow = count * size;
+	if (tst_overflow != 0 && tst_overflow / size != count)
+		return (NULL);
+	p = malloc(count * size);
+	if (!p)
+		return (NULL);
+	ft_memset(p, 0, count * size);
+	return (p);
 }
 
 char	*ft_strdup(char *s1)
 {
 	char	*s2;
-	size_t	len;
-	size_t	i;
+	int		i;
 
-	len = ft_strlen(s1);
-	s2 = malloc((len + 1) * sizeof(char));
+	s2 = ft_calloc((ft_strlen((char *)s1) + 1), sizeof(char));
 	if (!s2)
-	{
-		free(s1);
-		return (0);
-	}
-		
-	i = 0;
-	while (s1[i])
+		return (NULL);
+	i = -1;
+	while (s1[++i])
 	{
 		s2[i] = s1[i];
-		i++;
 	}
-	s2[i] = '\0';
 	return (s2);
+}
+
+void	*ft_memset(void *ptr, int x, size_t n)
+{
+	char	*str;
+
+	str = ptr;
+	while (n--)
+	{
+		*str++ = (unsigned char)x;
+	}
+	return (ptr);
 }
 
 size_t	ft_strlen(const char *s)
