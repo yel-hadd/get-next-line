@@ -6,129 +6,155 @@
 /*   By: yel-hadd <yel-hadd@mail.com>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 15:31:39 by yel-hadd          #+#    #+#             */
-/*   Updated: 2022/12/17 16:29:01 by yel-hadd         ###   ########.fr       */
+/*   Updated: 2022/12/22 19:15:55 by yel-hadd         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-static char	*clean_nl(char *stockage)
+char	*ft_substr(char *s, unsigned int start, size_t len)
 {
-	size_t	len;
-	char	*new_stockage;
-	size_t	j;
-	size_t	i;
+	char	*sub;
+	size_t	slen;
 
-	if (!stockage)
+	if (!s)
 		return (NULL);
-	i = 0;
-	while (stockage[i] != '\n' && stockage[i])
-		i ++;
-	j = 0;
-	len = ft_strlen(stockage);
-	new_stockage = ft_calloc((len - i + 1), sizeof(char));
-	if (!new_stockage)
-	{
-		free(stockage);
+	slen = ft_strlen(s);
+	if (len > slen - start)
+		len = slen - start;
+	if (start >= slen)
+		return (ft_strdup(""));
+	sub = malloc((len + 1) * sizeof(char));
+	if (!sub)
 		return (NULL);
-	}
-	while (stockage[i])
-		new_stockage[j ++] = stockage[++i];
-	free(stockage);
-	return (new_stockage);
+	ft_memcpy(sub, s + start, len);
+	sub[len] = '\0';
+	return (sub);
 }
 
-static char	*return_line(char	*stockage)
+static char	*read_and_store(int fd, char *storage)
 {
-	char	*line;
-	size_t	i;
+	char	*buf;
+	int		readed;
 
-	i = 0;
-	if (!stockage)
+	readed = 1;
+	while(!ft_strchr(storage, '\n') && readed > 0)
+	{
+		buf = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
+		if (!buf)
+			return (NULL);
+		readed = read(fd, buf, BUFFER_SIZE);
+		if (readed < 0)
+		{
+			if (storage)
+				free(storage);
+			free(buf);
+			return (NULL);
+		}
+		buf[readed] = '\0';
+		if (readed == 0)
+		{
+			free(buf);
+			return (storage);
+		}
+		storage = ft_strjoin(storage, buf);
+		free(buf);
+	}
+	return (storage);
+}
+
+static char	*get_line(char *storage)
+{
+	size_t	i;
+	size_t	j;
+	char	*line;
+
+	if (!storage)
 		return (NULL);
-	while (stockage[i] != '\n' && stockage[i])
+	i = 0;
+	j = 0;
+	while(storage[i] && storage[i] != '\n')
 		i ++;
-	line = ft_calloc((i + 2), sizeof(char));
+	if (!i)
+		return (storage);
+	line = (char *)malloc((i + 2) * sizeof(char));
 	if (!line)
+		return (NULL);
+	while(j <= i)
 	{
-		free(stockage);
+		line[j] = storage[j];
+		j ++;
+	}
+	line[j] = '\0';
+	return (line);
+}
+
+static char	*clean_storage(char *storage)
+{
+	size_t	i;
+	size_t	len;
+	char	*new_storage;
+
+	if (!storage)
+		return (NULL);
+	len = ft_strlen(storage);
+	i = 0;
+	while(storage[i] && storage[i] != '\n')
+		i ++;
+	++ i;
+	new_storage = ft_substr(storage, i, (ft_strlen(storage) - i));
+	free(storage);
+	if (!new_storage)
+	{
 		return (NULL);
 	}
-	i = 0;
-	while (stockage[i] != '\n' && stockage[i])
-	{
-		line[i] = stockage[i];
-		i ++;
-	}
-	line[i] = stockage[i];
-	return (line);
+	storage = new_storage;
+	return(storage);
 }
 
 char *get_next_line(int fd)
 {
-	static char	*stockage;
-	char		*buff;
-	long long	read_bytes;
+	static char	*storage;
 	char		*line;
 
-	if (fd < 0 || BUFFER_SIZE <= 0)
+	line = NULL;
+	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, line, 0) < 0)
 		return (NULL);
-	buff = malloc((BUFFER_SIZE + 1) * sizeof(char));
-	if (!buff)
-	{
-		if (stockage)
-			free(stockage);
+	// read from fd and store
+	storage = read_and_store(fd, storage);
+	if (!storage)
 		return (NULL);
-	}
-	read_bytes = 1;
-	while(read_bytes && !ft_strchr(stockage, '\n'))
+	// extract from storage to line
+	if (ft_strchr(storage, '\n') || ft_strlen(storage))
 	{
-		read_bytes = read(fd, buff, BUFFER_SIZE);
-		if (read_bytes == -1)
+		line = get_line(storage);
+		if (!line[0])
 		{
-			if (stockage)
-				free (stockage);
-			free(buff);
+			free(line);
+			free(storage);
 			return (NULL);
 		}
-		else if (read_bytes == 0)
-			break ;
-		buff[read_bytes] = '\0';
-		stockage = ft_strjoin(stockage, buff);
-	}
-	free(buff);
-	line = return_line(stockage);
-	if (!line || !line[0])
-	{
-		if (stockage)
-			free(stockage);
-		if (line)
+		// clean storage
+		storage = clean_storage(storage);
+		if (!storage)
 			free(line);
-		return (NULL);
-	}
-	stockage = clean_nl(stockage);
-	if (!stockage)
-	{
-		if (line)
-			free(line);
-		return (NULL);
 	}
 	return (line);
 }
 
-// int	main(void)
-// {
-// 	char	*str;
-// 	int		fd;
-
-// 	fd = open("1.txt", O_RDONLY);
-// 	str = get_next_line(fd);
-// 	while (str)
-// 	{
-// 		printf("%s", str);
-// 		free(str);
-// 		str = get_next_line(fd);
-// 		sleep(1);
-// 	}
-// 	close(fd);
-// }
+//int	main(void)
+//{
+//	char	*str;
+//	int		fd;
+//	fd = open("1.txt", O_RDONLY);
+//	str = get_next_line(fd);
+//	while (str)
+//	{
+//		printf("%s", str);
+//		free(str);
+//		str = get_next_line(fd);
+//	}
+//	//printf("%s", str);
+//	free(str);
+//	close(fd);
+//}

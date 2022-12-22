@@ -6,7 +6,7 @@
 /*   By: yel-hadd <yel-hadd@mail.com>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 15:31:31 by yel-hadd          #+#    #+#             */
-/*   Updated: 2022/12/17 16:27:02 by yel-hadd         ###   ########.fr       */
+/*   Updated: 2022/12/22 19:10:51 by yel-hadd         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,29 +14,24 @@
 
 char	*ft_strjoin(char *s1, char *s2)
 {
-	size_t	slen1;
-	size_t	slen2;
+	size_t	len;
 	char	*join;
+	char	*copy;
 
-	if ((!s1 && !s2))
-		return (0);
 	if (!s1)
 		return (ft_strdup(s2));
-	if (!s2)
-		return (s1);
-	slen1 = ft_strlen(s1);
-	slen2 = ft_strlen(s2);
-	join = ft_calloc((slen1 + slen2 + 1), sizeof(char));
+	copy = s1;
+	len = ft_strlen(s1) + ft_strlen(s2);
+	join = malloc((len+ 1) * sizeof(char));
 	if (!join)
-	{
-		free (s1);
 		return (0);
-	}
 	while (*s1)
 		*join ++ = *s1 ++;
 	while (*s2)
 		*join ++ = *s2 ++;
-	return (join - slen1 - slen2);
+	*join = '\0';
+	free(copy);
+	return (join - len);
 }
 
 char	*ft_strdup(char *s1)
@@ -46,15 +41,20 @@ char	*ft_strdup(char *s1)
 	size_t	i;
 
 	len = ft_strlen(s1);
-	s2 = ft_calloc((len + 1), sizeof(char));
+	s2 = malloc((len + 1) * sizeof(char));
 	if (!s2)
+	{
+		free(s1);
 		return (0);
+	}
+		
 	i = 0;
 	while (s1[i])
 	{
 		s2[i] = s1[i];
 		i++;
 	}
+	s2[i] = '\0';
 	return (s2);
 }
 
@@ -65,37 +65,14 @@ size_t	ft_strlen(const char *s)
 
 	i = 0;
 	count = 0;
+	if (!s)
+		return (0);
 	while (s[i])
 	{
 		count += 1;
 		i ++;
 	}
 	return (count);
-}
-
-void	*ft_calloc(size_t count, size_t size)
-{
-	void	*ptr;
-
-	ptr = malloc(size * count);
-	if (!ptr)
-		return (NULL);
-	ft_memset(ptr, 0, count * size);
-	return (ptr);
-}
-
-void	*ft_memset(void *b, int c, size_t len)
-{
-	unsigned char	*pb;
-
-	pb = (unsigned char *) b;
-	while (len != 0)
-	{
-		*pb = (unsigned char) c;
-		pb ++;
-		len --;
-	}
-	return (b);
 }
 
 char	*ft_strchr(char *s, int c)
@@ -114,4 +91,19 @@ char	*ft_strchr(char *s, int c)
 		i ++;
 	}
 	return (NULL);
+}
+
+void	*ft_memcpy(void *dst, const void *src, size_t n)
+{
+	void	*dstcpy;
+
+	dstcpy = dst;
+	if (!dst && !src)
+		return (dstcpy);
+	while ((n > 0))
+	{
+		*(char *)dst ++ = *(char *)src ++;
+		n --;
+	}
+	return (dstcpy);
 }
