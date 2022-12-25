@@ -6,7 +6,7 @@
 /*   By: yel-hadd <yel-hadd@mail.com>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 15:31:31 by yel-hadd          #+#    #+#             */
-/*   Updated: 2022/12/22 21:57:48 by yel-hadd         ###   ########.fr       */
+/*   Updated: 2022/12/25 13:18:27 by yel-hadd         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,27 @@ void	*ft_calloc(size_t count, size_t size)
 		return (NULL);
 	ft_memset(p, 0, count * size);
 	return (p);
+}
+
+char	*ft_substr(char *s, unsigned int start, size_t len)
+{
+	char	*sub;
+	size_t	slen;
+
+	if (!s)
+		return (NULL);
+	slen = ft_strlen(s);
+	if (len > slen - start)
+		len = slen - start;
+	if (start >= slen)
+		return (ft_strdup(""));
+	sub = malloc((len + 1) * sizeof(char));
+	if (!sub)
+		return (NULL);
+	s += start;
+	ft_memcpy(sub, s, len);
+	sub[len] = '\0';
+	return (sub);
 }
 
 char	*ft_strdup(char *s1)
@@ -90,7 +111,7 @@ char	*ft_strchr(char *s, int c)
 	return (NULL);
 }
 
-void	*ft_memcpy(void *dst, const void *src, size_t n)
+void	*ft_memcpy(void *dst, void *src, size_t n)
 {
 	void	*dstcpy;
 
