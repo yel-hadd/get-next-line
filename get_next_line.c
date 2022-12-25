@@ -6,7 +6,7 @@
 /*   By: yel-hadd <yel-hadd@mail.com>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 15:31:39 by yel-hadd          #+#    #+#             */
-/*   Updated: 2022/12/25 13:42:07 by yel-hadd         ###   ########.fr       */
+/*   Updated: 2022/12/25 13:50:03 by yel-hadd         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,11 @@ void	read_and_save(char **storage, int fd)
 			return ;
 		read_byte = read(fd, buf, BUFFER_SIZE);
 		if(read_byte == -1)
+		{
+			free(*storage);
+			*storage = NULL;
 			return (free(buf));
+		}
 		if (read_byte == 0)
 			return (free(buf));
 		tmp = *storage;
