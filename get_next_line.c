@@ -6,11 +6,31 @@
 /*   By: yel-hadd <yel-hadd@mail.com>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 15:31:39 by yel-hadd          #+#    #+#             */
-/*   Updated: 2022/12/25 13:50:03 by yel-hadd         ###   ########.fr       */
+/*   Updated: 2022/12/25 17:38:58 by yel-hadd         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
+
+void	*ft_calloc(size_t count, size_t size)
+{
+	unsigned char	*p;
+	size_t			tst_overflow;
+	size_t			i;
+
+	i = 0;
+	if (!size || !count)
+		return (NULL);
+	tst_overflow = count * size;
+	if (tst_overflow != 0 && tst_overflow / size != count)
+		return (NULL);
+	p = malloc(count * size);
+	if (!p)
+		return (NULL);
+	while (i < size)
+		p[i ++] = 0;
+	return (p);
+}
 
 char	*ft_strjoin(char *s1, char *s2)
 {
@@ -37,6 +57,20 @@ char	*ft_strjoin(char *s1, char *s2)
 	return (join - slen1 - slen2);
 }
 
+int	get_line_index(char *s)
+{
+	int	i;
+
+	i = 0;
+	while (s[i])
+	{
+		if (s[i] == '\n')
+			return (i + 1);
+		i++;
+	}
+	return (i);
+}
+
 void	read_and_save(char **storage, int fd)
 {
 	char	*buf;
@@ -46,19 +80,14 @@ void	read_and_save(char **storage, int fd)
 
 	read_byte = 1;
 	i = 0;
-	
 	while (!ft_strchr(*storage, '\n'))
 	{
 		buf = ft_calloc(sizeof(char), (BUFFER_SIZE + 1));
 		if (!buf)
-			return ;
+			return (free(*storage));
 		read_byte = read(fd, buf, BUFFER_SIZE);
-		if(read_byte == -1)
-		{
-			free(*storage);
-			*storage = NULL;
-			return (free(buf));
-		}
+		if (read_byte == -1)
+			return (free(*storage), free(buf));
 		if (read_byte == 0)
 			return (free(buf));
 		tmp = *storage;
@@ -68,28 +97,14 @@ void	read_and_save(char **storage, int fd)
 	}
 }
 
-int	get_line_index(char *s)
-{
-	int	i;
-
-	i = 0;
-	while(s[i])
-	{
-		if (s[i] == '\n')
-			return (i + 1);
-		i++;
-	}
-	return (i);
-}
-
-char *get_next_line(int fd)
+char	*get_next_line(int fd)
 {
 	char		*line;
 	static char	*storage;
 	char		*tmp;
-	int 		i;
+	int			i;
 
-	if (fd < 0 || BUFFER_SIZE <= 0 )
+	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
 	read_and_save(&storage, fd);
 	if (!storage || !*storage)
@@ -103,18 +118,3 @@ char *get_next_line(int fd)
 	free(tmp);
 	return (line);
 }
-
-// int	main(void)
-// {
-// 	char	*str;
-// 	int		fd;
-
-// 	fd = open("./1.txt", O_RDONLY);
-// 	while ((str = get_next_line(fd)))
-// 	{
-// 		printf("%s", str);fflush(stdout);
-// 		free(str);
-// 	}
-// 	close(fd);
-// 	//system("leaks a.out");
-// }

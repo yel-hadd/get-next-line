@@ -6,26 +6,11 @@
 /*   By: yel-hadd <yel-hadd@mail.com>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/13 15:31:31 by yel-hadd          #+#    #+#             */
-/*   Updated: 2022/12/25 13:18:27 by yel-hadd         ###   ########.fr       */
+/*   Updated: 2022/12/25 17:30:09 by yel-hadd         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-
-void	*ft_calloc(size_t count, size_t size)
-{
-	void	*p;
-	size_t	tst_overflow;
-
-	tst_overflow = count * size;
-	if (tst_overflow != 0 && tst_overflow / size != count)
-		return (NULL);
-	p = malloc(count * size);
-	if (!p)
-		return (NULL);
-	ft_memset(p, 0, count * size);
-	return (p);
-}
 
 char	*ft_substr(char *s, unsigned int start, size_t len)
 {
@@ -64,18 +49,6 @@ char	*ft_strdup(char *s1)
 	return (s2);
 }
 
-void	*ft_memset(void *ptr, int x, size_t n)
-{
-	char	*str;
-
-	str = ptr;
-	while (n--)
-	{
-		*str++ = (unsigned char)x;
-	}
-	return (ptr);
-}
-
 size_t	ft_strlen(const char *s)
 {
 	size_t	count;
@@ -98,7 +71,7 @@ char	*ft_strchr(char *s, int c)
 	size_t	i;
 
 	i = 0;
-	if(!s)
+	if (!s)
 		return (NULL);
 	if ((char) c == '\0')
 		return (&s[ft_strlen(s)]);
