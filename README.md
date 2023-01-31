@@ -22,7 +22,7 @@ int		main(int argc, char **argv)
 			free(line);
 		}
 		if (ret == -1)
-			ft_putstr("An error occurred while reading the file\n");
+			printf("An error occurred while reading the file\n");
 		close(fd);
 	}
 	return (0);
